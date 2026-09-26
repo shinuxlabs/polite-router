@@ -7,6 +7,8 @@
   },
   "dependencies": {
     "@slack/bolt": "^4.6.0",
-    "@vercel/slack-bolt": "^1.7.1"
+    "@sparticuz/chromium-min": "153.0.0",
+    "@vercel/slack-bolt": "^1.7.1",
+    "puppeteer-core": "25.12.0"
   }
 }
