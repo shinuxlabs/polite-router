@@ -1,59 +1,53 @@
 # Polite Router
 
-Slack bot that reads a site's rules and finds the lowest-impact way in. It runs on Vercel. A URL gets a polite route (robots.txt, feeds, sitemaps, a short crawl). Anything else is a chat with Grok.
+Cloud Slack bot. It runs only on Vercel at `https://polite-router.vercel.app/api/slack`. There is no local server.
 
-## Cloud
+A URL is routed politely (robots.txt, feeds, sitemaps, a short crawl). Anything else is a chat with Grok (`grok-4.5`).
 
-The live Slack endpoint is `https://polite-router.vercel.app/api/slack`.
+## Commands
 
-1. Create a Slack app at [api.slack.com/apps](https://api.slack.com/apps) → **From a manifest** and paste `manifest.yaml`.
-2. Install it to the workspace. Copy the bot token (`xoxb-…`) and the signing secret.
-3. On Vercel, set `SLACK_BOT_TOKEN` and `SLACK_SIGNING_SECRET`. `XAI_API_KEY` is already set.
-4. If the app already existed, paste the manifest again and reinstall so Slack grants `assistant:write`.
-5. In Slack, open **Polite Router** → **Messages**. That tab is the chat box.
-
-## Usage
-
-| Method | Example |
-|--------|---------|
-| Messages tab | Open the app and type |
-| Slash command | `/route https://example.com` |
-| Mention | `@PoliteRouter https://example.com` |
-| DM a URL | Routes the site, then Grok summarizes |
-| DM anything else | Chat with Grok |
-
-`max:10` caps how many pages are listed.
-
-## How the LLM is linked
-
-Slack never sees the key. The Messages tab, DMs, mentions, and `/route` all end in `askGrok()` in `lib/grok.js`:
+In the **Messages** tab, or in a DM with **@PoliteRouter**:
 
 ```
-POST https://api.x.ai/v1/chat/completions
-Authorization: Bearer $XAI_API_KEY
-model: $XAI_MODEL   (default grok-4.5)
+https://example.com
+https://example.com max:10
+What can you do?
 ```
 
-`GET /api/slack` reports whether that key is present. It does not reveal the key.
+In any channel where the bot is invited:
 
-## Environment variables
-
-| Variable | Default | Description |
-|----------|---------|-------------|
-| `SLACK_BOT_TOKEN` | — | Required. `xoxb-…` |
-| `SLACK_SIGNING_SECRET` | — | Required for the Vercel endpoint |
-| `XAI_API_KEY` | — | Required for Grok chat and summaries |
-| `XAI_MODEL` | grok-4.5 | xAI model |
-| `PR_MAX_PAGES` | 15 | Max pages per run |
-| `PR_MAX_REQUESTS` | 30 | Hard cap on network requests |
-| `PR_BOT_NAME` | PoliteRouter | User-Agent bot name |
-| `PR_CONTACT` | — | Optional contact URL or email in the User-Agent |
-
-## Local Socket Mode
-
-`app.py` still runs the original Bolt Socket Mode wrapper. It needs `polite_router.py` on the path, `SLACK_BOT_TOKEN`, and `SLACK_APP_TOKEN`.
-
-```bash
-pip install -r requirements.txt
-python app.py
 ```
+/route https://example.com
+/route https://example.com max:10
+@PoliteRouter https://example.com
+@PoliteRouter what can you do?
+```
+
+`max:` is optional. It caps the page list from 1 to 30. The default is 15.
+
+## Check that it is up
+
+```
+curl https://polite-router.vercel.app/api/slack
+```
+
+`slack` and `grok` must both be `true`.
+
+## Slack app
+
+If you recreate the app, use **From a manifest** and paste `manifest.yaml`, then install it to the workspace. The request URL is already `https://polite-router.vercel.app/api/slack`.
+
+## Environment
+
+Set on Vercel for Production, Preview, and Development. Nothing is read from a local `.env` in production.
+
+| Variable | Default | Required |
+|----------|---------|----------|
+| `SLACK_BOT_TOKEN` | — | yes |
+| `SLACK_SIGNING_SECRET` | — | yes |
+| `XAI_API_KEY` | — | yes |
+| `XAI_MODEL` | grok-4.5 | no |
+| `PR_MAX_PAGES` | 15 | no |
+| `PR_MAX_REQUESTS` | 30 | no |
+| `PR_BOT_NAME` | PoliteRouter | no |
+| `PR_CONTACT` | — | no |
