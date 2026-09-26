@@ -28,14 +28,15 @@ export default async function handler(req, res) {
       slack: slackConfigured,
       slackAuth: auth,
       grok: grokConfigured,
+      browser: true,
       model: llmModel(),
       llm: LLM_URL,
-      connections: {
-        messages: "message.im -> askGrok",
-        mention: "app_mention -> askGrok",
-        route: "/route -> routeSite -> askGrok",
-      },
     });
+    return;
+  }
+
+  if (Number(req.headers["x-slack-retry-num"] || 0) > 0) {
+    res.status(200).json({ ok: true });
     return;
   }
 
