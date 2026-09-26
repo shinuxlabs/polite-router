@@ -13,7 +13,7 @@ features:
     always_online: true
   slash_commands:
     - command: /route
-      url: ""
+      url: https://polite-router.vercel.app/api/slack
       description: Route a website politely
       usage_hint: "https://example.com"
       should_escape: false
@@ -30,12 +30,14 @@ oauth_config:
 
 settings:
   event_subscriptions:
+    request_url: https://polite-router.vercel.app/api/slack
     bot_events:
       - app_home_opened
       - app_mention
       - message.im
   interactivity:
     is_enabled: true
+    request_url: https://polite-router.vercel.app/api/slack
   org_deploy_enabled: false
-  socket_mode_enabled: true
+  socket_mode_enabled: false
   token_rotation_enabled: false

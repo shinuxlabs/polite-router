@@ -1,11 +1,16 @@
 import { createHandler } from "@vercel/slack-bolt";
-import { app, receiver } from "../lib/bolt-app.js";
+import { app, grokConfigured, receiver, slackConfigured } from "../lib/bolt-app.js";
 
 const post = createHandler(app, receiver);
 
 export default async function handler(req, res) {
   if (req.method === "GET") {
-    res.status(200).send("Polite Router is running. Slack should POST events here.");
+    res.status(200).json({
+      ok: true,
+      name: "polite-router",
+      slack: slackConfigured,
+      grok: grokConfigured,
+    });
     return;
   }
 
