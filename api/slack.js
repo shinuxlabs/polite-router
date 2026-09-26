@@ -4,12 +4,29 @@ import { LLM_URL, llmModel } from "../lib/grok.js";
 
 const post = createHandler(app, receiver);
 
+async function slackAuth() {
+  const token = process.env.SLACK_BOT_TOKEN || "";
+  if (!token || token.startsWith("xoxb-0-0-")) return "missing";
+  try {
+    const res = await fetch("https://slack.com/api/auth.test", {
+      method: "POST",
+      headers: { Authorization: `Bearer ${token}` },
+    });
+    const body = await res.json();
+    return body.ok ? "ok" : body.error || "invalid_auth";
+  } catch {
+    return "unreachable";
+  }
+}
+
 export default async function handler(req, res) {
   if (req.method === "GET") {
+    const auth = await slackAuth();
     res.status(200).json({
       ok: true,
       name: "polite-router",
       slack: slackConfigured,
+      slackAuth: auth,
       grok: grokConfigured,
       model: llmModel(),
       llm: LLM_URL,
@@ -37,10 +54,20 @@ export default async function handler(req, res) {
     headers,
     body: req.method === "GET" || req.method === "HEAD" ? undefined : body,
   });
-  const response = await post(request);
-  res.status(response.status);
-  response.headers.forEach((value, key) => {
-    res.setHeader(key, value);
-  });
-  res.send(Buffer.from(await response.arrayBuffer()));
+  try {
+    const response = await post(request);
+    res.status(response.status);
+    response.headers.forEach((value, key) => {
+      res.setHeader(key, value);
+    });
+    res.send(Buffer.from(await response.arrayBuffer()));
+  } catch (err) {
+    const code = err?.data?.error || "";
+    console.error("slack handler failed", code || err?.message || err);
+    if (code === "invalid_auth") {
+      res.status(200).json({ ok: false, error: "invalid_auth" });
+      return;
+    }
+    res.status(500).json({ ok: false });
+  }
 }
