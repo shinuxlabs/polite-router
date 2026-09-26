@@ -3,7 +3,7 @@
   "framework": null,
   "functions": {
     "api/slack.js": {
-      "maxDuration": 60,
+      "maxDuration": 300,
       "memory": 2048
     }
   }
