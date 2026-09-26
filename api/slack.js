@@ -1,5 +1,6 @@
 import { createHandler } from "@vercel/slack-bolt";
 import { app, grokConfigured, receiver, slackConfigured } from "../lib/bolt-app.js";
+import { LLM_URL, llmModel } from "../lib/grok.js";
 
 const post = createHandler(app, receiver);
 
@@ -10,6 +11,13 @@ export default async function handler(req, res) {
       name: "polite-router",
       slack: slackConfigured,
       grok: grokConfigured,
+      model: llmModel(),
+      llm: LLM_URL,
+      connections: {
+        messages: "message.im -> askGrok",
+        mention: "app_mention -> askGrok",
+        route: "/route -> routeSite -> askGrok",
+      },
     });
     return;
   }

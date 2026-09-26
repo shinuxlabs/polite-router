@@ -4,23 +4,37 @@ Slack bot that reads a site's rules and finds the lowest-impact way in. It runs 
 
 ## Cloud
 
-The live Slack endpoint is `https://<your-project>.vercel.app/api/slack`.
+The live Slack endpoint is `https://polite-router.vercel.app/api/slack`.
 
-1. Create a Slack app at [api.slack.com/apps](https://api.slack.com/apps) → **From a manifest** and paste `manifest.yaml` (its request URLs must match the Vercel domain).
+1. Create a Slack app at [api.slack.com/apps](https://api.slack.com/apps) → **From a manifest** and paste `manifest.yaml`.
 2. Install it to the workspace. Copy the bot token (`xoxb-…`) and the signing secret.
-3. On Vercel, set `SLACK_BOT_TOKEN`, `SLACK_SIGNING_SECRET`, and `XAI_API_KEY`.
-4. Reinstall the app if Slack asks you to after changing the manifest. Invite `@PoliteRouter` to a channel.
+3. On Vercel, set `SLACK_BOT_TOKEN` and `SLACK_SIGNING_SECRET`. `XAI_API_KEY` is already set.
+4. If the app already existed, paste the manifest again and reinstall so Slack grants `assistant:write`.
+5. In Slack, open **Polite Router** → **Messages**. That tab is the chat box.
 
 ## Usage
 
 | Method | Example |
 |--------|---------|
+| Messages tab | Open the app and type |
 | Slash command | `/route https://example.com` |
 | Mention | `@PoliteRouter https://example.com` |
 | DM a URL | Routes the site, then Grok summarizes |
 | DM anything else | Chat with Grok |
 
 `max:10` caps how many pages are listed.
+
+## How the LLM is linked
+
+Slack never sees the key. The Messages tab, DMs, mentions, and `/route` all end in `askGrok()` in `lib/grok.js`:
+
+```
+POST https://api.x.ai/v1/chat/completions
+Authorization: Bearer $XAI_API_KEY
+model: $XAI_MODEL   (default grok-4.5)
+```
+
+`GET /api/slack` reports whether that key is present. It does not reveal the key.
 
 ## Environment variables
 

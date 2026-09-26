@@ -8,6 +8,13 @@ features:
     home_tab_enabled: true
     messages_tab_enabled: true
     messages_tab_read_only_enabled: false
+  agent_view:
+    agent_description: Chat in Messages. Send a URL for a polite route, or just talk. Grok answers.
+    suggested_prompts:
+      - title: Route a site
+        message: "https://example.com"
+      - title: What can you do?
+        message: What can you do?
   bot_user:
     display_name: PoliteRouter
     always_online: true
@@ -27,6 +34,7 @@ oauth_config:
       - im:read
       - im:write
       - app_mentions:read
+      - assistant:write
 
 settings:
   event_subscriptions:
@@ -35,6 +43,7 @@ settings:
       - app_home_opened
       - app_mention
       - message.im
+      - agent_session_stopped
   interactivity:
     is_enabled: true
     request_url: https://polite-router.vercel.app/api/slack
