@@ -1,30 +1,15 @@
-# Polite Router — Slack Bot
+# Polite Router
 
-Chat interface for [polite_router.py](polite_router.py). Send a URL in Slack, get back what the site allows — feeds, sitemaps, and crawlable pages — without breaking any rules.
+Slack bot that reads a site's rules and finds the lowest-impact way in. It runs on Vercel. A URL gets a polite route (robots.txt, feeds, sitemaps, a short crawl). Anything else is a chat with Grok.
 
-## Setup
+## Cloud
 
-### 1. Create the Slack app
+The live Slack endpoint is `https://<your-project>.vercel.app/api/slack`.
 
-1. Go to [api.slack.com/apps](https://api.slack.com/apps) → **Create New App** → **From a manifest**
-2. Pick your workspace
-3. Paste the contents of `manifest.yaml`
-4. Click **Create**
-
-### 2. Get your tokens
-
-- **Bot token:** OAuth & Permissions → Install to Workspace → copy `xoxb-…`
-- **App token:** Basic Information → App-Level Tokens → **Generate Token** with `connections:write` scope → copy `xapp-…`
-
-### 3. Run it
-
-```bash
-cp .env.example .env
-# Fill in SLACK_BOT_TOKEN and SLACK_APP_TOKEN
-
-pip install -r requirements.txt
-python app.py
-```
+1. Create a Slack app at [api.slack.com/apps](https://api.slack.com/apps) → **From a manifest** and paste `manifest.yaml` (its request URLs must match the Vercel domain).
+2. Install it to the workspace. Copy the bot token (`xoxb-…`) and the signing secret.
+3. On Vercel, set `SLACK_BOT_TOKEN`, `SLACK_SIGNING_SECRET`, and `XAI_API_KEY`.
+4. Reinstall the app if Slack asks you to after changing the manifest. Invite `@PoliteRouter` to a channel.
 
 ## Usage
 
@@ -32,19 +17,29 @@ python app.py
 |--------|---------|
 | Slash command | `/route https://example.com` |
 | Mention | `@PoliteRouter https://example.com` |
-| DM | Just paste a URL |
+| DM a URL | Routes the site, then Grok summarizes |
+| DM anything else | Chat with Grok |
 
-The bot replies with a formatted card showing every page it found, which route it used (feed, sitemap, crawl), request stats, and the router log.
+`max:10` caps how many pages are listed.
 
 ## Environment variables
 
 | Variable | Default | Description |
 |----------|---------|-------------|
 | `SLACK_BOT_TOKEN` | — | Required. `xoxb-…` |
-| `SLACK_APP_TOKEN` | — | Required. `xapp-…` |
+| `SLACK_SIGNING_SECRET` | — | Required for the Vercel endpoint |
+| `XAI_API_KEY` | — | Required for Grok chat and summaries |
+| `XAI_MODEL` | grok-4.5 | xAI model |
 | `PR_MAX_PAGES` | 15 | Max pages per run |
 | `PR_MAX_REQUESTS` | 30 | Hard cap on network requests |
-| `PR_FRESH_MINS` | 60 | Cache freshness in minutes |
 | `PR_BOT_NAME` | PoliteRouter | User-Agent bot name |
-| `PR_CONTACT` | — | Optional contact URL/email in User-Agent |
-| `PR_CACHE_DIR` | .router_cache | Where cached pages are stored |
+| `PR_CONTACT` | — | Optional contact URL or email in the User-Agent |
+
+## Local Socket Mode
+
+`app.py` still runs the original Bolt Socket Mode wrapper. It needs `polite_router.py` on the path, `SLACK_BOT_TOKEN`, and `SLACK_APP_TOKEN`.
+
+```bash
+pip install -r requirements.txt
+python app.py
+```
